@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const AppSidebar = () => {
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -43,10 +43,12 @@ const AppSidebar = () => {
   const getNavCls = (path: string) =>
     isActive(path) ? "bg-blue-600 text-white hover:bg-blue-700" : "text-gray-700 hover:bg-gray-100";
 
+  const isCollapsed = state === "collapsed";
+
   return (
     <Sidebar
-      className={collapsed ? "w-14" : "w-64"}
-      collapsible
+      className={isCollapsed ? "w-14" : "w-64"}
+      collapsible="icon"
     >
       <SidebarTrigger className="m-2 self-end" />
 
@@ -65,7 +67,7 @@ const AppSidebar = () => {
                         className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${getNavCls(item.path)}`}
                       >
                         <Icon className="h-5 w-5" />
-                        {!collapsed && <span className="font-medium">{item.label}</span>}
+                        {!isCollapsed && <span className="font-medium">{item.label}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
