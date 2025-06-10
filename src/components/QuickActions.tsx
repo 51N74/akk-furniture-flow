@@ -2,17 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus, ShoppingCart, Users, Package, FileText } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const QuickActions = () => {
-  const { toast } = useToast();
-
-  const handleAction = (actionName: string) => {
-    toast({
-      title: "ฟีเจอร์กำลังพัฒนา",
-      description: `${actionName} จะเปิดให้ใช้งานในเร็วๆ นี้`,
-    });
-  };
+  const navigate = useNavigate();
 
   const actions = [
     {
@@ -20,28 +13,28 @@ const QuickActions = () => {
       description: "สร้างรายการขายใหม่",
       icon: ShoppingCart,
       color: "bg-green-600 hover:bg-green-700",
-      onClick: () => handleAction("การขายเงินสด")
+      onClick: () => navigate("/cash-sales")
     },
     {
       title: "เพิ่มลูกค้า",
       description: "ลงทะเบียนลูกค้าใหม่",
       icon: Users,
       color: "bg-blue-600 hover:bg-blue-700",
-      onClick: () => handleAction("เพิ่มลูกค้า")
+      onClick: () => navigate("/customers")
     },
     {
       title: "เพิ่มสินค้า",
       description: "เพิ่มสินค้าเข้าสต็อก",
       icon: Package,
       color: "bg-purple-600 hover:bg-purple-700",
-      onClick: () => handleAction("เพิ่มสินค้า")
+      onClick: () => navigate("/products")
     },
     {
       title: "สัญญาผ่อนชำระ",
       description: "สร้างสัญญาผ่อนชำระใหม่",
       icon: FileText,
       color: "bg-orange-600 hover:bg-orange-700",
-      onClick: () => handleAction("สัญญาผ่อนชำระ")
+      onClick: () => navigate("/hire-purchase")
     }
   ];
 
