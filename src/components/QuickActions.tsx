@@ -1,39 +1,53 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, ShoppingCart, Users, Package } from "lucide-react";
+import { Plus, ShoppingCart, Users, Package, FileText } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const QuickActions = () => {
+  const { toast } = useToast();
+
+  const handleAction = (actionName: string) => {
+    toast({
+      title: "ฟีเจอร์กำลังพัฒนา",
+      description: `${actionName} จะเปิดให้ใช้งานในเร็วๆ นี้`,
+    });
+  };
+
   const actions = [
     {
-      title: "New Cash Sale",
-      description: "Create a new cash sale transaction",
+      title: "การขายเงินสด",
+      description: "สร้างรายการขายใหม่",
       icon: ShoppingCart,
-      color: "bg-green-600 hover:bg-green-700"
+      color: "bg-green-600 hover:bg-green-700",
+      onClick: () => handleAction("การขายเงินสด")
     },
     {
-      title: "Add Customer",
-      description: "Register a new customer",
+      title: "เพิ่มลูกค้า",
+      description: "ลงทะเบียนลูกค้าใหม่",
       icon: Users,
-      color: "bg-blue-600 hover:bg-blue-700"
+      color: "bg-blue-600 hover:bg-blue-700",
+      onClick: () => handleAction("เพิ่มลูกค้า")
     },
     {
-      title: "Add Product",
-      description: "Add new inventory item",
+      title: "เพิ่มสินค้า",
+      description: "เพิ่มสินค้าเข้าสต็อก",
       icon: Package,
-      color: "bg-purple-600 hover:bg-purple-700"
+      color: "bg-purple-600 hover:bg-purple-700",
+      onClick: () => handleAction("เพิ่มสินค้า")
     },
     {
-      title: "Hire Purchase",
-      description: "Create new hire purchase agreement",
-      icon: Plus,
-      color: "bg-orange-600 hover:bg-orange-700"
+      title: "สัญญาผ่อนชำระ",
+      description: "สร้างสัญญาผ่อนชำระใหม่",
+      icon: FileText,
+      color: "bg-orange-600 hover:bg-orange-700",
+      onClick: () => handleAction("สัญญาผ่อนชำระ")
     }
   ];
 
   return (
     <Card className="p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">การดำเนินการด่วน</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {actions.map((action, index) => {
           const Icon = action.icon;
@@ -42,6 +56,7 @@ const QuickActions = () => {
               key={index}
               variant="outline"
               className={`${action.color} text-white border-none h-auto p-4 flex-col space-y-2 hover:scale-105 transition-all duration-200`}
+              onClick={action.onClick}
             >
               <Icon className="h-8 w-8" />
               <div className="text-center">
