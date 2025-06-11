@@ -27,10 +27,12 @@ interface Product {
 }
 
 interface HirePurchaseContract {
-  id: string;
+ id: string;
   customer_id: string;
   contract_number: string;
-  customers: { name: string };level: string;}
+  customers: { 
+    name: string;
+    level: string;
   total_amount: number;
   down_payment: number;
   outstanding_balance: number;
@@ -39,6 +41,8 @@ interface HirePurchaseContract {
   monthly_payment: number;
   status: string;
   contract_date: string;
+}
+
 }
 
 const HirePurchase = () => {
