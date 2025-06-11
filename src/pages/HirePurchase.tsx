@@ -30,7 +30,7 @@ interface HirePurchaseContract {
   id: string;
   customer_id: string;
   contract_number: string;
-  customers: { name: string };
+  customers: { name: string };level: string;}
   total_amount: number;
   down_payment: number;
   outstanding_balance: number;
