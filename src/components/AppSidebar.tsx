@@ -9,7 +9,8 @@ import {
   BarChart, 
   Receipt, 
   Settings,
-  Home
+  Home,
+  UserPlus
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,7 @@ const AppSidebar = () => {
     { id: "customers", label: "Customers", icon: Users, path: "/customers" },
     { id: "products", label: "Products", icon: Package, path: "/products" },
     { id: "hire-purchase", label: "Hire Purchase", icon: FileText, path: "/hire-purchase" },
+    { id: "employees", label: "จัดการพนักงาน", icon: UserPlus, path: "/employees" },
     { id: "reports", label: "Reports", icon: BarChart, path: "/reports" },
     { id: "accounting", label: "Accounting", icon: Receipt, path: "/accounting" },
   ];

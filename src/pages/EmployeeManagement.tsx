@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2, Users, UserPlus, Settings } from 'lucide-react';
 
 interface Employee {
   id: string;
@@ -24,6 +25,7 @@ interface Employee {
   hire_date: string;
   salary: number;
   status: string;
+  created_at: string;
 }
 
 const EmployeeManagement = () => {
@@ -31,6 +33,8 @@ const EmployeeManagement = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     first_name: '',
@@ -94,7 +98,6 @@ const EmployeeManagement = () => {
           description: "ข้อมูลพนักงานได้รับการอัพเดตแล้ว",
         });
       } else {
-        // สำหรับการเพิ่มพนักงานใหม่ จะต้องสร้างผ่านระบบ auth
         toast({
           title: "แจ้งเตือน",
           description: "การเพิ่มพนักงานใหม่ต้องผ่านการสมัครสมาชิกในระบบ",
@@ -187,6 +190,43 @@ const EmployeeManagement = () => {
     return colors[role as keyof typeof colors] || 'bg-gray-500';
   };
 
+  const getRoleText = (role: string) => {
+    const roleTexts = {
+      admin: 'ผู้ดูแลระบบ',
+      manager: 'ผู้จัดการ',
+      sales_staff: 'พนักงานขาย',
+      cashier: 'แคชเชียร์'
+    };
+    return roleTexts[role as keyof typeof roleTexts] || role;
+  };
+
+  const filteredEmployees = employees.filter(employee => {
+    const matchesSearch = 
+      employee.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (activeTab === 'all') return matchesSearch;
+    if (activeTab === 'active') return matchesSearch && employee.status === 'active';
+    if (activeTab === 'inactive') return matchesSearch && employee.status === 'inactive';
+    return matchesSearch && employee.role === activeTab;
+  });
+
+  const getEmployeeStats = () => {
+    return {
+      total: employees.length,
+      active: employees.filter(e => e.status === 'active').length,
+      inactive: employees.filter(e => e.status === 'inactive').length,
+      admin: employees.filter(e => e.role === 'admin').length,
+      manager: employees.filter(e => e.role === 'manager').length,
+      sales_staff: employees.filter(e => e.role === 'sales_staff').length,
+      cashier: employees.filter(e => e.role === 'cashier').length
+    };
+  };
+
+  const stats = getEmployeeStats();
+
   if (loading && employees.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -201,13 +241,16 @@ const EmployeeManagement = () => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>จัดการข้อมูลพนักงาน</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-6 w-6" />
+                จัดการข้อมูลพนักงาน
+              </CardTitle>
               <CardDescription>จัดการข้อมูลและสิทธิ์ของพนักงานในระบบ</CardDescription>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={resetForm}>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <UserPlus className="h-4 w-4 mr-2" />
                   เพิ่มพนักงาน
                 </Button>
               </DialogTrigger>
@@ -351,66 +394,128 @@ const EmployeeManagement = () => {
             </Dialog>
           </div>
         </CardHeader>
+
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ชื่อ-นามสกุล</TableHead>
-                <TableHead>ชื่อผู้ใช้</TableHead>
-                <TableHead>อีเมล</TableHead>
-                <TableHead>ตำแหน่ง</TableHead>
-                <TableHead>แผนก</TableHead>
-                <TableHead>สิทธิ์</TableHead>
-                <TableHead>สถานะ</TableHead>
-                <TableHead>จัดการ</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {employees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell className="font-medium">
-                    {employee.first_name} {employee.last_name}
-                  </TableCell>
-                  <TableCell>{employee.username || '-'}</TableCell>
-                  <TableCell>{employee.email}</TableCell>
-                  <TableCell>{employee.position || '-'}</TableCell>
-                  <TableCell>{employee.department || '-'}</TableCell>
-                  <TableCell>
-                    <Badge className={`text-white ${getRoleBadge(employee.role)}`}>
-                      {employee.role === 'admin' && 'ผู้ดูแลระบบ'}
-                      {employee.role === 'manager' && 'ผู้จัดการ'}
-                      {employee.role === 'sales_staff' && 'พนักงานขาย'}
-                      {employee.role === 'cashier' && 'แคชเชียร์'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={employee.status === 'active' ? 'default' : 'secondary'}>
-                      {employee.status === 'active' ? 'ปฏิบัติงาน' : 'หยุดปฏิบัติงาน'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(employee)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDelete(employee.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          {/* สถิติพนักงาน */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+                <div className="text-sm text-gray-600">พนักงานทั้งหมด</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+                <div className="text-sm text-gray-600">ปฏิบัติงาน</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-red-600">{stats.inactive}</div>
+                <div className="text-sm text-gray-600">หยุดปฏิบัติงาน</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-purple-600">{stats.admin}</div>
+                <div className="text-sm text-gray-600">ผู้ดูแลระบบ</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* ช่องค้นหา */}
+          <div className="mb-4">
+            <Input
+              placeholder="ค้นหาพนักงาน..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+
+          {/* Tabs สำหรับจัดการพนักงาน */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="all">ทั้งหมด ({stats.total})</TabsTrigger>
+              <TabsTrigger value="active">ปฏิบัติงาน ({stats.active})</TabsTrigger>
+              <TabsTrigger value="admin">แอดมิน ({stats.admin})</TabsTrigger>
+              <TabsTrigger value="manager">ผู้จัดการ ({stats.manager})</TabsTrigger>
+              <TabsTrigger value="sales_staff">พนักงานขาย ({stats.sales_staff})</TabsTrigger>
+              <TabsTrigger value="cashier">แคชเชียร์ ({stats.cashier})</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value={activeTab} className="mt-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ชื่อ-นามสกุล</TableHead>
+                    <TableHead>ชื่อผู้ใช้</TableHead>
+                    <TableHead>อีเมล</TableHead>
+                    <TableHead>ตำแหน่ง</TableHead>
+                    <TableHead>แผนก</TableHead>
+                    <TableHead>สิทธิ์</TableHead>
+                    <TableHead>เงินเดือน</TableHead>
+                    <TableHead>สถานะ</TableHead>
+                    <TableHead>จัดการ</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEmployees.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                        ไม่พบข้อมูลพนักงาน
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredEmployees.map((employee) => (
+                      <TableRow key={employee.id}>
+                        <TableCell className="font-medium">
+                          {employee.first_name} {employee.last_name}
+                        </TableCell>
+                        <TableCell>{employee.username || '-'}</TableCell>
+                        <TableCell>{employee.email}</TableCell>
+                        <TableCell>{employee.position || '-'}</TableCell>
+                        <TableCell>{employee.department || '-'}</TableCell>
+                        <TableCell>
+                          <Badge className={`text-white ${getRoleBadge(employee.role)}`}>
+                            {getRoleText(employee.role)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {employee.salary ? `฿${employee.salary.toLocaleString()}` : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={employee.status === 'active' ? 'default' : 'secondary'}>
+                            {employee.status === 'active' ? 'ปฏิบัติงาน' : 'หยุดปฏิบัติงาน'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEdit(employee)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDelete(employee.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
