@@ -1,17 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Edit, Plus, Trash2, Users, UserPlus, Settings } from 'lucide-react';
+import { Users } from 'lucide-react';
+import EmployeeForm from '@/components/employees/EmployeeForm';
+import EmployeeStats from '@/components/employees/EmployeeStats';
+import EmployeeFilters from '@/components/employees/EmployeeFilters';
+import EmployeeTable from '@/components/employees/EmployeeTable';
 
 interface Employee {
   id: string;
@@ -180,26 +177,6 @@ const EmployeeManagement = () => {
     setEditingEmployee(null);
   };
 
-  const getRoleBadge = (role: string) => {
-    const colors = {
-      admin: 'bg-red-500',
-      manager: 'bg-blue-500',
-      sales_staff: 'bg-green-500',
-      cashier: 'bg-yellow-500'
-    };
-    return colors[role as keyof typeof colors] || 'bg-gray-500';
-  };
-
-  const getRoleText = (role: string) => {
-    const roleTexts = {
-      admin: 'ผู้ดูแลระบบ',
-      manager: 'ผู้จัดการ',
-      sales_staff: 'พนักงานขาย',
-      cashier: 'แคชเชียร์'
-    };
-    return roleTexts[role as keyof typeof roleTexts] || role;
-  };
-
   const filteredEmployees = employees.filter(employee => {
     const matchesSearch = 
       employee.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -247,273 +224,37 @@ const EmployeeManagement = () => {
               </CardTitle>
               <CardDescription>จัดการข้อมูลและสิทธิ์ของพนักงานในระบบ</CardDescription>
             </div>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={resetForm}>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  เพิ่มพนักงาน
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingEmployee ? 'แก้ไขข้อมูลพนักงาน' : 'เพิ่มพนักงานใหม่'}
-                  </DialogTitle>
-                  <DialogDescription>
-                    กรอกข้อมูลพนักงานในฟอร์มด้านล่าง
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="first_name">ชื่อ</Label>
-                      <Input
-                        id="first_name"
-                        value={formData.first_name}
-                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="last_name">นามสกุล</Label>
-                      <Input
-                        id="last_name"
-                        value={formData.last_name}
-                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="username">ชื่อผู้ใช้</Label>
-                    <Input
-                      id="username"
-                      value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">อีเมล</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="role">ตำแหน่งในระบบ</Label>
-                      <Select
-                        value={formData.role}
-                        onValueChange={(value) => setFormData({ ...formData, role: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">ผู้ดูแลระบบ</SelectItem>
-                          <SelectItem value="manager">ผู้จัดการ</SelectItem>
-                          <SelectItem value="sales_staff">พนักงานขาย</SelectItem>
-                          <SelectItem value="cashier">แคชเชียร์</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="status">สถานะ</Label>
-                      <Select
-                        value={formData.status}
-                        onValueChange={(value) => setFormData({ ...formData, status: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">ปฏิบัติงาน</SelectItem>
-                          <SelectItem value="inactive">หยุดปฏิบัติงาน</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="position">ตำแหน่งงาน</Label>
-                      <Input
-                        id="position"
-                        value={formData.position}
-                        onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="department">แผนก</Label>
-                      <Input
-                        id="department"
-                        value={formData.department}
-                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="hire_date">วันที่เริ่มงาน</Label>
-                      <Input
-                        id="hire_date"
-                        type="date"
-                        value={formData.hire_date}
-                        onChange={(e) => setFormData({ ...formData, hire_date: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="salary">เงินเดือน</Label>
-                      <Input
-                        id="salary"
-                        type="number"
-                        value={formData.salary}
-                        onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-2">
-                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                      ยกเลิก
-                    </Button>
-                    <Button type="submit" disabled={loading}>
-                      {loading ? 'กำลังบันทึก...' : 'บันทึก'}
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <EmployeeForm
+              dialogOpen={dialogOpen}
+              setDialogOpen={setDialogOpen}
+              editingEmployee={editingEmployee}
+              formData={formData}
+              setFormData={setFormData}
+              loading={loading}
+              onSubmit={handleSubmit}
+              onReset={resetForm}
+            />
           </div>
         </CardHeader>
 
         <CardContent>
-          {/* สถิติพนักงาน */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-                <div className="text-sm text-gray-600">พนักงานทั้งหมด</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-                <div className="text-sm text-gray-600">ปฏิบัติงาน</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-red-600">{stats.inactive}</div>
-                <div className="text-sm text-gray-600">หยุดปฏิบัติงาน</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-purple-600">{stats.admin}</div>
-                <div className="text-sm text-gray-600">ผู้ดูแลระบบ</div>
-              </CardContent>
-            </Card>
-          </div>
+          <EmployeeStats stats={stats} />
+          
+          <EmployeeFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            stats={stats}
+          />
 
-          {/* ช่องค้นหา */}
-          <div className="mb-4">
-            <Input
-              placeholder="ค้นหาพนักงาน..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
-            />
-          </div>
-
-          {/* Tabs สำหรับจัดการพนักงาน */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="all">ทั้งหมด ({stats.total})</TabsTrigger>
-              <TabsTrigger value="active">ปฏิบัติงาน ({stats.active})</TabsTrigger>
-              <TabsTrigger value="admin">แอดมิน ({stats.admin})</TabsTrigger>
-              <TabsTrigger value="manager">ผู้จัดการ ({stats.manager})</TabsTrigger>
-              <TabsTrigger value="sales_staff">พนักงานขาย ({stats.sales_staff})</TabsTrigger>
-              <TabsTrigger value="cashier">แคชเชียร์ ({stats.cashier})</TabsTrigger>
-            </TabsList>
-
             <TabsContent value={activeTab} className="mt-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ชื่อ-นามสกุล</TableHead>
-                    <TableHead>ชื่อผู้ใช้</TableHead>
-                    <TableHead>อีเมล</TableHead>
-                    <TableHead>ตำแหน่ง</TableHead>
-                    <TableHead>แผนก</TableHead>
-                    <TableHead>สิทธิ์</TableHead>
-                    <TableHead>เงินเดือน</TableHead>
-                    <TableHead>สถานะ</TableHead>
-                    <TableHead>จัดการ</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredEmployees.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="text-center py-8 text-gray-500">
-                        ไม่พบข้อมูลพนักงาน
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredEmployees.map((employee) => (
-                      <TableRow key={employee.id}>
-                        <TableCell className="font-medium">
-                          {employee.first_name} {employee.last_name}
-                        </TableCell>
-                        <TableCell>{employee.username || '-'}</TableCell>
-                        <TableCell>{employee.email}</TableCell>
-                        <TableCell>{employee.position || '-'}</TableCell>
-                        <TableCell>{employee.department || '-'}</TableCell>
-                        <TableCell>
-                          <Badge className={`text-white ${getRoleBadge(employee.role)}`}>
-                            {getRoleText(employee.role)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {employee.salary ? `฿${employee.salary.toLocaleString()}` : '-'}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={employee.status === 'active' ? 'default' : 'secondary'}>
-                            {employee.status === 'active' ? 'ปฏิบัติงาน' : 'หยุดปฏิบัติงาน'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEdit(employee)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDelete(employee.id)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+              <EmployeeTable
+                employees={filteredEmployees}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>
