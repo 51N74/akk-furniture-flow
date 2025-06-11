@@ -7,8 +7,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (username: string, email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
+  signIn: (username: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+  const signUp = async (username: string, email: string, password: string, firstName?: string, lastName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -51,13 +51,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: {
           first_name: firstName,
           last_name: lastName,
+          username: username,
         }
       }
     });
+
+    if (!error) {
+      // อัพเดต username ในตาราง profiles หลังจากสมัครสมาชิก
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ username })
+          .eq('id', user.id);
+      }
+    }
+    
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (username: string, password: string) => {
+    // ค้นหา email จาก username
+    const { data: userProfile } = await supabase
+      .rpc('get_user_by_username', { input_username: username });
+
+    if (!userProfile || userProfile.length === 0) {
+      return { error: { message: 'ไม่พบผู้ใช้งานนี้' } };
+    }
+
+    const email = userProfile[0].email;
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,

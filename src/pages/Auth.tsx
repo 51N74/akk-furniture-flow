@@ -11,6 +11,7 @@ import { Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -24,7 +25,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signUp(email, password, firstName, lastName);
+    const { error } = await signUp(username, email, password, firstName, lastName);
     
     if (error) {
       toast({
@@ -46,12 +47,12 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(username, password);
     
     if (error) {
       toast({
         title: "เกิดข้อผิดพลาด",
-        description: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+        description: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
         variant: "destructive",
       });
     } else {
@@ -92,12 +93,12 @@ const Auth = () => {
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">อีเมล</Label>
+                    <Label htmlFor="username">ชื่อผู้ใช้</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      id="username"
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required
                     />
                   </div>
@@ -138,6 +139,16 @@ const Auth = () => {
                         required
                       />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signupUsername">ชื่อผู้ใช้</Label>
+                    <Input
+                      id="signupUsername"
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signupEmail">อีเมล</Label>

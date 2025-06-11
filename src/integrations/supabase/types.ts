@@ -397,33 +397,51 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          department: string | null
           email: string | null
           first_name: string | null
+          hire_date: string | null
           id: string
           last_name: string | null
           phone: string | null
+          position: string | null
           role: string
+          salary: number | null
+          status: string | null
           updated_at: string
+          username: string | null
         }
         Insert: {
           created_at?: string
+          department?: string | null
           email?: string | null
           first_name?: string | null
+          hire_date?: string | null
           id: string
           last_name?: string | null
           phone?: string | null
+          position?: string | null
           role?: string
+          salary?: number | null
+          status?: string | null
           updated_at?: string
+          username?: string | null
         }
         Update: {
           created_at?: string
+          department?: string | null
           email?: string | null
           first_name?: string | null
+          hire_date?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
+          position?: string | null
           role?: string
+          salary?: number | null
+          status?: string | null
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -483,7 +501,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_by_username: {
+        Args: { input_username: string }
+        Returns: {
+          id: string
+          email: string
+          username: string
+          first_name: string
+          last_name: string
+          role: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
