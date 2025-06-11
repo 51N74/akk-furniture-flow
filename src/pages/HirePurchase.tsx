@@ -32,7 +32,8 @@ interface HirePurchaseContract {
   contract_number: string;
   customers: { 
     name: string;
-    level: string;
+    level: string; // เพิ่มระดับของลูกค้า
+  };
   total_amount: number;
   down_payment: number;
   outstanding_balance: number;
@@ -41,6 +42,8 @@ interface HirePurchaseContract {
   monthly_payment: number;
   status: string;
   contract_date: string;
+}
+
 }
 
 }
