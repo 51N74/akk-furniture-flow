@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { FileText, Plus, Search, Eye, DollarSign, Calendar } from "lucide-react";
+import { FileText, Plus, Search, Eye, DollarSign, Calendar, Edit } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import EditContractForm from "@/components/hire-purchase/EditContractForm";
 
 interface Customer {
   id: string;
@@ -55,6 +56,10 @@ const HirePurchase = () => {
     installment_periods: "12",
     products: [] as { product_id: string; quantity: number; unit_price: number }[]
   });
+
+  const { isAdmin } = useUserRole();
+  const [editingContract, setEditingContract] = useState<HirePurchaseContract | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   useEffect(() => {
     fetchContracts();
@@ -180,6 +185,17 @@ const HirePurchase = () => {
       console.error("Error creating contract:", error);
       toast.error("ไม่สามารถสร้างสัญญาได้");
     }
+  };
+
+  const handleEditContract = (contract: HirePurchaseContract) => {
+    setEditingContract(contract);
+    setShowEditForm(true);
+  };
+
+  const handleEditSuccess = () => {
+    fetchContracts();
+    setShowEditForm(false);
+    setEditingContract(null);
   };
 
   const filteredContracts = contracts.filter(contract =>
@@ -345,9 +361,22 @@ const HirePurchase = () => {
                       <span>{contract.installment_periods} งวด</span>
                     </div>
                   </div>
-                  <div className="text-right text-sm text-gray-600">
-                    <p>วันที่สัญญา: {new Date(contract.contract_date).toLocaleDateString('th-TH')}</p>
-                    <p>คงเหลือ: ฿{contract.outstanding_balance?.toLocaleString()}</p>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="text-right text-sm text-gray-600">
+                      <p>วันที่สัญญา: {new Date(contract.contract_date).toLocaleDateString('th-TH')}</p>
+                      <p>คงเหลือ: ฿{contract.outstanding_balance?.toLocaleString()}</p>
+                    </div>
+                    {isAdmin && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditContract(contract)}
+                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        แก้ไข
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -360,6 +389,16 @@ const HirePurchase = () => {
           </div>
         </CardContent>
       </Card>
+
+      <EditContractForm
+        contract={editingContract}
+        isOpen={showEditForm}
+        onClose={() => {
+          setShowEditForm(false);
+          setEditingContract(null);
+        }}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 };
