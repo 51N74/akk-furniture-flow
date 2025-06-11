@@ -28,6 +28,7 @@ interface Product {
 
 interface HirePurchaseContract {
   id: string;
+  customer_id: string;
   contract_number: string;
   customers: { name: string };
   total_amount: number;
